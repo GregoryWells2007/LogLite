@@ -3,7 +3,6 @@ package log
 import (
 	"fmt"
 	"time"
-	"os"
 )
 
 const (
@@ -12,28 +11,22 @@ const (
 	Error   = "Error"
 )
 
-const (
-	List    = 0
-	File    = 1
-	Console = 2
-)
-
-var output_lists []*[]string
-var output_files []*os.File;
-var output_console bool = false
-
-func AddOutput(output_type int, a ...interface{}) {
+func AddOutput(output_type int, a ...interface{}) any {
 	if output_type == List {
-		output_lists = append(output_lists, a[0].(*[]string))
+		listOutput := &ListOutput{};
+		OutputTargets = append(OutputTargets, listOutput);
 	} else if output_type == File {
-		file, err := os.Create(a[0].(string))
-		if err != nil {
-			panic(err);
-		}
-		output_files = append(output_files, file)
+		fileOutput := &FileOutput{};
+		OutputTargets = append(OutputTargets, fileOutput);
 	} else if output_type == Console {
-		output_console = true
+		consoleOutput := &ConsoleOutput{};
+		OutputTargets = append(OutputTargets, consoleOutput);
+	} else {
+		Write(Error, "Unknown Output target");
 	}
+
+	OutputTargets[len(OutputTargets) - 1].Init(a...);
+	return &OutputTargets[len(OutputTargets) - 1];
 }
 
 /*
@@ -70,18 +63,12 @@ func Write(level string, message string) {
 	}
 	output += "\n";
 
-	for i := 0; i < len(output_lists); i++ {
-		*output_lists[i] = append(*output_lists[i], output)
+	for i := 0; i < len(OutputTargets); i++ {
+		OutputTargets[i].Output(output);
 	}
-	for i := 0; i < len(output_files); i++ {
-        file := output_files[i];
+}
 
-		_, err := file.WriteString(output);
-		if err != nil {
-			panic(err);
-		}
-	}
-	if output_console {
-		fmt.Printf("%s", output)
-	}
+func WriteFormatted(level string, format string, a ...interface{}) {
+	var formatted_string string = fmt.Sprintf(format, a...);
+	Write(level, formatted_string);	
 }
