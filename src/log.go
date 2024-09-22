@@ -11,18 +11,36 @@ const (
 	Error   = "Error"
 )
 
+var contains_console_out bool = false;
 func AddOutput(output_type int, a ...interface{}) any {
+	if (contains_console_out && output_type == Console) {
+		Write(Warning, "Attempting to add multiple console outputs [LogLite]");
+		return nil;
+	}
+
 	if output_type == List {
 		listOutput := &ListOutput{};
 		OutputTargets = append(OutputTargets, listOutput);
 	} else if output_type == File {
+		for i := 0; i < len(OutputTargets); i++ {
+			if (OutputTargets[i].GetOutputType() == File) {
+				
+				if (OutputTargets[i].(*FileOutput).OutputFileName == a[0].(string)) {
+					Write(Warning, "Attempting to add a file as an output target again, returning old target [LogLite]");
+					return OutputTargets[i];
+				}
+			}
+		}
+
 		fileOutput := &FileOutput{};
 		OutputTargets = append(OutputTargets, fileOutput);
 	} else if output_type == Console {
 		consoleOutput := &ConsoleOutput{};
 		OutputTargets = append(OutputTargets, consoleOutput);
+		contains_console_out = true;
 	} else {
-		Write(Error, "Unknown Output target");
+		Write(Error, "Unknown Output target [LogLite]");
+		return nil;
 	}
 
 	OutputTargets[len(OutputTargets) - 1].Init(a...);

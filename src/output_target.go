@@ -16,12 +16,15 @@ type OutputTarget interface {
 	Init(arguments ...any)
 	Output(message string);
 	Close();
+
+	GetOutputType() int;
 }
 
 // console output
 type ConsoleOutput struct {
 	OutputTarget
 }
+func (consoleOutput *ConsoleOutput) GetOutputType() int { return Console }
 func (consoleOutput *ConsoleOutput) Init(arguments ...any) {}
 func (consoleOutput *ConsoleOutput) Output(message string) { fmt.Print(message); }
 func (consoleOutput *ConsoleOutput) Close() { }
@@ -30,14 +33,16 @@ func (consoleOutput *ConsoleOutput) Close() { }
 type FileOutput struct {
 	OutputTarget
 	OutputFile *os.File;
-	Name string;
+	OutputFileName string;
 }
+func (fileOutput *FileOutput) GetOutputType() int { return File }
 func (fileOutput *FileOutput) Init(arguments ...any) {
 	var err error;
 	fileOutput.OutputFile, err = os.Create(arguments[0].(string))
 	if err != nil {
 		panic(err);
 	}
+	fileOutput.OutputFileName = arguments[0].(string);
 }
 func (fileOutput *FileOutput) Output(message string) {
 	_, err := fileOutput.OutputFile.WriteString(message);
@@ -52,6 +57,7 @@ type ListOutput struct {
 	OutputTarget
 	OutputList *[]string;
 }
+func (listOutput *ListOutput) GetOutputType() int { return List }
 func (listOutput *ListOutput) Init(arguments ...any) { listOutput.OutputList = arguments[0].(*[]string); }
 func (listOutput *ListOutput) Output(message string) { *listOutput.OutputList = append(*listOutput.OutputList, message) }
 func (listOutput *ListOutput) Close() { }
