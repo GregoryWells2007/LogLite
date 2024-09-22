@@ -53,32 +53,10 @@ func AddOutput(output_type int, a ...interface{}) any {
 %m = message
 */
 var output_format string = "[%t] %l: %m"
-
-func SetFormat(format string) {
-	output_format = format
-}
+func SetFormat(format string) { output_format = format }
 
 func Write(level string, message string) {
-	var output string
-
-	for i := 0; i < len(output_format); i++ {
-		if string(output_format[i]) == "%" {
-			i++
-			format := output_format[i]
-			if format == 't' {
-				output += time.Now().Format("15:04:05")
-			} else if format == 'l' {
-				output += level
-			} else if format == 'm' {
-				output += message
-			} else {
-				// Write(Error, "invalid log code\n");
-				return
-			}
-		} else {
-			output += string(output_format[i])
-		}
-	}
+	var output string = FormatMessage(output_format, []Insert{ Insert{ 't', time.Now().Format("15:04:05") }, Insert{ 'l', level }, Insert{ 'm', message }  });
 	output += "\n";
 
 	for i := 0; i < len(OutputTargets); i++ {
