@@ -2,3 +2,4 @@ test
 test.go
 go.mod
 changelog/
+test.txt
