@@ -12,12 +12,12 @@ type Insert struct {
 
 func FormatMessage(format string, inserts []Insert) (string) {
 	var output string;
-	for i := 0; i < len(output_format); i++ {
-		if (output_format[i] == '%') {
+	for i := 0; i < len(format); i++ {
+		if (format[i] == '%') {
 			i++;
 			var found bool = false;
 			for p := 0; p < len(inserts); p++ {
-				if (inserts[p].ID == rune(output_format[i])) {
+				if (inserts[p].ID == rune(format[i])) {
 					output += inserts[p].Value;
 					found = true;
 					break;
@@ -26,10 +26,10 @@ func FormatMessage(format string, inserts []Insert) (string) {
 
 			if (!found) {
 				output += "%";
-				output += string(output_format[i]);
+				output += string(format[i]);
 			}
 		} else {
-			output += string(output_format[i])
+			output += string(format[i])
 		}
 	}
 	return output;
