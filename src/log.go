@@ -17,7 +17,7 @@ const (
 
 var contains_console_out bool = false;
 var console_index int = 0;
-func AddOutput(output_type int, a ...interface{}) *OutputTarget {
+func AddOutputTarget(output_type int, a ...interface{}) *OutputTarget {
 	if (contains_console_out && output_type == Console) {
 		Write(Warning, "Attempting to add multiple console outputs [LogLite]");
 		return &OutputTargets[console_index];
@@ -55,6 +55,15 @@ func AddOutput(output_type int, a ...interface{}) *OutputTarget {
 	OutputTargets[len(OutputTargets) - 1].OutputStream.Init(a...);
 	return &OutputTargets[len(OutputTargets) - 1];
 }
+func RemoveOutputTarget(target *OutputTarget) {
+	for i := 0; i < len(OutputTargets); i++ {
+		if (OutputTargets[i] == *target) {
+			OutputTargets = append(OutputTargets[:i], OutputTargets[i+1:]...)
+			return;
+		}
+	}
+	WriteFormatted(Warning, "cannot removed output target as it is not a current output target [LogLite]");
+}
 
 /*
 %d = date
@@ -65,7 +74,7 @@ func AddOutput(output_type int, a ...interface{}) *OutputTarget {
 
 func Write(level string, message string) {
 	if (len(OutputTargets) == 0) {
-		AddOutput(Console);
+		AddOutputTarget(Console);
 		Write(Warning, "No output target specified adding console [LogLite]");
 	}
 
