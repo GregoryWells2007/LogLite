@@ -35,7 +35,7 @@ func AddOutput(output_type int, a ...interface{}) any {
 		fileOutput := &FileOutput{};
 		OutputTargets = append(OutputTargets, fileOutput);
 	} else if output_type == Console {
-		consoleOutput := &ConsoleOutput{};
+		consoleOutput := &ConsoleOutput{}; 
 		OutputTargets = append(OutputTargets, consoleOutput);
 		contains_console_out = true;
 	} else {
@@ -48,15 +48,16 @@ func AddOutput(output_type int, a ...interface{}) any {
 }
 
 /*
+%d = data
 %t = time
 %l = level
 %m = message
 */
-var output_format string = "[%t] %l: %m"
+var output_format string = "[%d %t] %l: %m"
 func SetFormat(format string) { output_format = format }
 
 func Write(level string, message string) {
-	var output string = FormatMessage(output_format, []Insert{ Insert{ 't', time.Now().Format("15:04:05") }, Insert{ 'l', level }, Insert{ 'm', message }  });
+	var output string = FormatMessage(output_format, []Insert{ Insert{'d', GetDate()}, Insert{'t', time.Now().Format("15:04:05")}, Insert{'l', level}, Insert{'m', message}  });
 	output += "\n";
 
 	for i := 0; i < len(OutputTargets); i++ {
