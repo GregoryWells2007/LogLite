@@ -62,10 +62,13 @@ func AddOutput(output_type int, a ...interface{}) *OutputTarget {
 %l = level
 %m = message
 */
-// var output_format string = "[%d %t] %l: %m"
-// func SetFormat(format string) { output_format = format }
 
 func Write(level string, message string) {
+	if (len(OutputTargets) == 0) {
+		AddOutput(Console);
+		Write(Warning, "No output target specified adding console [LogLite]");
+	}
+
 	for i := 0; i < len(OutputTargets); i++ {
 		var output string = FormatMessage(OutputTargets[i].OuputPattern, []Insert{ Insert{'d', GetDate()}, Insert{'t', time.Now().Format("15:04:05")}, Insert{'l', level}, Insert{'m', message}  });
 		output += "\n";
