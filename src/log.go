@@ -53,7 +53,7 @@ func AddOutput(output_type int, a ...interface{}) *OutputTarget {
 	OutputTargets = append(OutputTargets, new_target);
 
 	OutputTargets[len(OutputTargets) - 1].OutputStream.Init(a...);
-	return &new_target;
+	return &OutputTargets[len(OutputTargets) - 1];
 }
 
 /*
