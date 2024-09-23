@@ -6,62 +6,70 @@ import (
 )
 
 const (
-	Message = "Message"
-	Warning = "Warning"
-	Error   = "Error"
+	Log      = "Log"
+	Trage    = "Trace"
+	Info     = "Info"
+	Message  = "Message"
+	Warning  = "Warning"
+	Error    = "Error"
+	Critical = "Critical"
 )
 
 var contains_console_out bool = false;
-func AddOutput(output_type int, a ...interface{}) any {
+var console_index int = 0;
+func AddOutput(output_type int, a ...interface{}) *OutputTarget {
 	if (contains_console_out && output_type == Console) {
 		Write(Warning, "Attempting to add multiple console outputs [LogLite]");
-		return nil;
+		return &OutputTargets[console_index];
 	}
+
+	var new_target OutputTarget = NewOutputTarget();
 
 	if output_type == List {
 		listOutput := &ListOutput{};
-		OutputTargets = append(OutputTargets, listOutput);
+		new_target.OutputStream = listOutput;
 	} else if output_type == File {
 		for i := 0; i < len(OutputTargets); i++ {
-			if (OutputTargets[i].GetOutputType() == File) {
-				
-				if (OutputTargets[i].(*FileOutput).OutputFileName == a[0].(string)) {
+			if (OutputTargets[i].OutputStream.GetOutputType() == File) {
+				if (OutputTargets[i].OutputStream.(*FileOutput).OutputFileName == a[0].(string)) {
 					Write(Warning, "Attempting to add a file as an output target again, returning old target [LogLite]");
-					return OutputTargets[i];
+					return &OutputTargets[i];
 				}
 			}
 		}
 
 		fileOutput := &FileOutput{};
-		OutputTargets = append(OutputTargets, fileOutput);
+		new_target.OutputStream = fileOutput;
 	} else if output_type == Console {
-		consoleOutput := &ConsoleOutput{}; 
-		OutputTargets = append(OutputTargets, consoleOutput);
+		consoleOutput := &ConsoleOutput{};
+		new_target.OutputStream = consoleOutput;
 		contains_console_out = true;
+		console_index = len(OutputTargets);
 	} else {
 		Write(Error, "Unknown Output target [LogLite]");
 		return nil;
 	}
 
-	OutputTargets[len(OutputTargets) - 1].Init(a...);
-	return &OutputTargets[len(OutputTargets) - 1];
+	OutputTargets = append(OutputTargets, new_target);
+
+	OutputTargets[len(OutputTargets) - 1].OutputStream.Init(a...);
+	return &new_target;
 }
 
 /*
-%d = data
+%d = date
 %t = time
 %l = level
 %m = message
 */
-var output_format string = "[%d %t] %l: %m"
-func SetFormat(format string) { output_format = format }
+// var output_format string = "[%d %t] %l: %m"
+// func SetFormat(format string) { output_format = format }
 
 func Write(level string, message string) {
-	var output string = FormatMessage(output_format, []Insert{ Insert{'d', GetDate()}, Insert{'t', time.Now().Format("15:04:05")}, Insert{'l', level}, Insert{'m', message}  });
-	output += "\n";
-
 	for i := 0; i < len(OutputTargets); i++ {
-		OutputTargets[i].Output(output);
+		var output string = FormatMessage(OutputTargets[i].OuputPattern, []Insert{ Insert{'d', GetDate()}, Insert{'t', time.Now().Format("15:04:05")}, Insert{'l', level}, Insert{'m', message}  });
+		output += "\n";
+		OutputTargets[i].OutputStream.Output(output);
 	}
 }
 

@@ -12,7 +12,7 @@ const (
 )
 
 // base output target class
-type OutputTarget interface {
+type IOutputStream interface {
 	Init(arguments ...any)
 	Output(message string);
 	Close();
@@ -22,7 +22,7 @@ type OutputTarget interface {
 
 // console output
 type ConsoleOutput struct {
-	OutputTarget
+	IOutputStream
 }
 func (consoleOutput *ConsoleOutput) GetOutputType() int { return Console }
 func (consoleOutput *ConsoleOutput) Init(arguments ...any) {}
@@ -31,7 +31,7 @@ func (consoleOutput *ConsoleOutput) Close() { }
 
 // file output
 type FileOutput struct {
-	OutputTarget
+	IOutputStream
 	OutputFile *os.File;
 	OutputFileName string;
 }
@@ -54,7 +54,7 @@ func (fileOutput *FileOutput) Close() { fileOutput.OutputFile.Close(); }
 
 // list output
 type ListOutput struct {
-	OutputTarget
+	IOutputStream
 	OutputList *[]string;
 }
 func (listOutput *ListOutput) GetOutputType() int { return List }
@@ -62,4 +62,9 @@ func (listOutput *ListOutput) Init(arguments ...any) { listOutput.OutputList = a
 func (listOutput *ListOutput) Output(message string) { *listOutput.OutputList = append(*listOutput.OutputList, message) }
 func (listOutput *ListOutput) Close() { }
 
+type OutputTarget struct {
+	OutputStream IOutputStream;
+	OuputPattern string;
+}
+func NewOutputTarget() OutputTarget { return OutputTarget{nil, "%m"} }
 var OutputTargets []OutputTarget; 
