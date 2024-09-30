@@ -14,57 +14,66 @@ const (
 // base output target class
 type IOutputStream interface {
 	Init(arguments ...any)
-	Output(message string);
-	Close();
+	Output(message string)
+	Close()
 
-	GetOutputType() int;
+	GetOutputType() int
 }
 
 // console output
 type ConsoleOutput struct {
 	IOutputStream
 }
-func (consoleOutput *ConsoleOutput) GetOutputType() int { return Console }
+
+func (consoleOutput *ConsoleOutput) GetOutputType() int    { return Console }
 func (consoleOutput *ConsoleOutput) Init(arguments ...any) {}
-func (consoleOutput *ConsoleOutput) Output(message string) { fmt.Print(message); }
-func (consoleOutput *ConsoleOutput) Close() { }
+func (consoleOutput *ConsoleOutput) Output(message string) { fmt.Print(message) }
+func (consoleOutput *ConsoleOutput) Close()                {}
 
 // file output
 type FileOutput struct {
 	IOutputStream
-	OutputFile *os.File;
-	OutputFileName string;
+	OutputFile     *os.File
+	OutputFileName string
 }
+
 func (fileOutput *FileOutput) GetOutputType() int { return File }
 func (fileOutput *FileOutput) Init(arguments ...any) {
-	var err error;
+	var err error
 	fileOutput.OutputFile, err = os.Create(arguments[0].(string))
 	if err != nil {
-		panic(err);
+		panic(err)
 	}
-	fileOutput.OutputFileName = arguments[0].(string);
+	fileOutput.OutputFileName = arguments[0].(string)
 }
 func (fileOutput *FileOutput) Output(message string) {
-	_, err := fileOutput.OutputFile.WriteString(message);
+	_, err := fileOutput.OutputFile.WriteString(message)
 	if err != nil {
-		panic(err);
-	}	
+		panic(err)
+	}
 }
-func (fileOutput *FileOutput) Close() { fileOutput.OutputFile.Close(); }
+func (fileOutput *FileOutput) Close() { fileOutput.OutputFile.Close() }
 
 // list output
 type ListOutput struct {
 	IOutputStream
-	OutputList *[]string;
+	OutputList *[]string
 }
+
 func (listOutput *ListOutput) GetOutputType() int { return List }
-func (listOutput *ListOutput) Init(arguments ...any) { listOutput.OutputList = arguments[0].(*[]string); }
-func (listOutput *ListOutput) Output(message string) { *listOutput.OutputList = append(*listOutput.OutputList, message) }
-func (listOutput *ListOutput) Close() { }
+func (listOutput *ListOutput) Init(arguments ...any) {
+	listOutput.OutputList = arguments[0].(*[]string)
+}
+func (listOutput *ListOutput) Output(message string) {
+	*listOutput.OutputList = append(*listOutput.OutputList, message)
+}
+func (listOutput *ListOutput) Close() {}
 
 type OutputTarget struct {
-	OutputStream IOutputStream;
-	OuputPattern string;
+	OutputStream IOutputStream
+	OuputPattern string
 }
+
 func NewOutputTarget() OutputTarget { return OutputTarget{nil, "%m"} }
-var OutputTargets []OutputTarget; 
+
+var OutputTargets []OutputTarget
