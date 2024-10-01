@@ -17,6 +17,10 @@ func FormatMessage(format string, inserts []Insert) string {
 			i2 := i
 			var insert_text string
 			for i2 < len(format) && format[i2] != '}' {
+				if format[i2] == ' ' {
+					break
+				}
+
 				insert_text += string(format[i2])
 				i2++
 			}
