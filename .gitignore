@@ -3,3 +3,6 @@ test.go
 go.mod
 changelog/
 test.txt
+error_log.txt
+.gitignore
+log-files/
