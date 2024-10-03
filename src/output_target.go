@@ -69,11 +69,52 @@ func (listOutput *ListOutput) Output(message string) {
 }
 func (listOutput *ListOutput) Close() {}
 
-type OutputTarget struct {
-	OutputStream IOutputStream
-	OuputPattern string
+type OutputFilter struct {
+	filter map[string]bool
 }
 
-func NewOutputTarget() OutputTarget { return OutputTarget{nil, "%m"} }
+func (target *OutputFilter) internal_InitFilter() {
+	target.filter = make(map[string]bool)
+	target.UnfilterAll()
+}
+
+func (target *OutputFilter) FilterAll() {
+	for i := 0; i < len(registeredLevels); i++ {
+		target.filter[registeredLevels[i].name] = false
+	}
+}
+
+func (target *OutputFilter) UnfilterAll() {
+	for i := 0; i < len(registeredLevels); i++ {
+		target.filter[registeredLevels[i].name] = true
+	}
+}
+
+func (target *OutputFilter) Filter(level LogLevel) {
+	target.filter[level.name] = false
+}
+
+func (target *OutputFilter) Unfilter(level LogLevel) {
+	target.filter[level.name] = true
+}
+
+type OutputTarget struct {
+	OutputStream IOutputStream
+	OutputFilter OutputFilter
+	OuputPattern string
+	targetID     int
+}
+
+var currentTargetID int = 0
+
+func NewOutputTarget() OutputTarget {
+	newTarget := OutputTarget{nil, OutputFilter{}, "%{message}", currentTargetID}
+	newTarget.OutputFilter.internal_InitFilter()
+	currentTargetID++
+	return newTarget
+}
+func (target *OutputTarget) GetTargetID() int {
+	return target.targetID
+}
 
 var OutputTargets []OutputTarget

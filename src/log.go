@@ -5,18 +5,10 @@ import (
 	"time"
 )
 
-const (
-	Log      = "Log"
-	Trace    = "Trace"
-	Info     = "Info"
-	Message  = "Message"
-	Warning  = "Warning"
-	Error    = "Error"
-	Critical = "Critical"
-)
-
 var contains_console_out bool = false
 var console_index int = 0
+
+var current_target_id int = 0
 
 func AddOutputTarget(output_type int, a ...interface{}) *OutputTarget {
 	if contains_console_out && output_type == Console {
@@ -54,11 +46,12 @@ func AddOutputTarget(output_type int, a ...interface{}) *OutputTarget {
 	OutputTargets = append(OutputTargets, new_target)
 
 	OutputTargets[len(OutputTargets)-1].OutputStream.Init(a...)
+	current_target_id++
 	return &OutputTargets[len(OutputTargets)-1]
 }
 func RemoveOutputTarget(target *OutputTarget) {
 	for i := 0; i < len(OutputTargets); i++ {
-		if OutputTargets[i] == *target {
+		if OutputTargets[i].GetTargetID() == target.GetTargetID() {
 			OutputTargets = append(OutputTargets[:i], OutputTargets[i+1:]...)
 			return
 		}
@@ -73,7 +66,7 @@ func RemoveOutputTarget(target *OutputTarget) {
 %m = message
 */
 
-func Write(level string, message string) {
+func Write(level LogLevel, message string) {
 	if len(OutputTargets) == 0 {
 		AddOutputTarget(Console)
 		Write(Warning, "No output target specified adding console [LogLite]")
@@ -83,14 +76,17 @@ func Write(level string, message string) {
 		var output string = FormatMessage(OutputTargets[i].OuputPattern, []Insert{
 			{"date", GetDate()},
 			{"time", time.Now().Format("15:04:05")},
-			{"level", level},
+			{"level", level.name},
 			{"message", message}})
 		output += "\n"
-		OutputTargets[i].OutputStream.Output(output)
+
+		if OutputTargets[i].OutputFilter.filter[level.name] {
+			OutputTargets[i].OutputStream.Output(output)
+		}
 	}
 }
 
-func WriteFormatted(level string, format string, a ...interface{}) {
+func WriteFormatted(level LogLevel, format string, a ...interface{}) {
 	var formatted_string string = fmt.Sprintf(format, a...)
 	Write(level, formatted_string)
 }
