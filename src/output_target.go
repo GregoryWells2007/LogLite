@@ -101,7 +101,8 @@ func (target *OutputFilter) Unfilter(level LogLevel) {
 type OutputTarget struct {
 	OutputStream IOutputStream
 	OutputFilter OutputFilter
-	OuputPattern string
+
+	ouputPattern string
 	targetID     int
 }
 
@@ -116,5 +117,7 @@ func NewOutputTarget() OutputTarget {
 func (target *OutputTarget) GetTargetID() int {
 	return target.targetID
 }
+func (target *OutputTarget) SetOutputPattern(pattern string) { target.ouputPattern = pattern }
+func (target *OutputTarget) GetOutputPattern() string        { return target.ouputPattern }
 
 var OutputTargets []OutputTarget

@@ -73,7 +73,7 @@ func Write(level LogLevel, message string) {
 	}
 
 	for i := 0; i < len(OutputTargets); i++ {
-		var output string = FormatMessage(OutputTargets[i].OuputPattern, []Insert{
+		var output string = FormatMessage(OutputTargets[i].ouputPattern, []Insert{
 			{"date", GetDate()},
 			{"time", time.Now().Format("15:04:05")},
 			{"level", level.name},
